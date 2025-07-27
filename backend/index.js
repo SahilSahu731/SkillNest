@@ -3,9 +3,12 @@ import http from 'http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import connectDB from './config/db.js';
+import { errorHandler, notFound } from './middleware/errorMiddleware.js';
+import userRoutes from './routes/user.routes.js';
 
 // Load environment variables
 dotenv.config();
@@ -35,6 +38,7 @@ const io = new Server(server, {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
+app.use(cookieParser());
 app.use(cors());
 
 // HTTP request logger middleware
@@ -46,10 +50,13 @@ app.get('/', (req, res) => {
   res.send('API is running...');
 });
 
+// API routes
+app.use('/api/users', userRoutes);
+
 // --- Error Handling Middleware ---
 // (We will implement this fully later)
-// app.use(notFound);
-// app.use(errorHandler);
+app.use(notFound);
+app.use(errorHandler);
 
 // ---------------- Socket.io ----------------
 io.on('connection', (socket) => {
